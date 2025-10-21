@@ -1,40 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useState,useEffect } from 'react'
+
 import './App.css'
 import { Checkbox } from './Components/ui/checkbox.jsx'
 import { Form } from './Components/ui/form.jsx'
 import { useSelector,useDispatch } from 'react-redux'
-import { addTodo, toggleTodo, deleteTodo } from './state-mangagement/todoSlice.js'
+import { addTodo, toggleTodo, deleteTodo ,setTodos } from './state-mangagement/todoSlice.js'
 
 
 
 
 function App() {
   const [value, setValue] = useState("");
+  const todos=useSelector((state)=>state.todos);
   const dispatch=useDispatch();
+  useEffect(() => {
+    const storedTodos = localStorage.getItem("todos");
+    if (storedTodos) {
+      console.log("Loaded todos from localStorage:", JSON.parse(storedTodos));
+      dispatch(setTodos(JSON.parse(storedTodos)));
+      
+    }
+  }, [dispatch]);
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todos));
+    
+  }, [todos]);
+
+  
   const handleSubmit = (e) => {
     e.preventDefault();
     if (value.trim() === "") return;
-    dispatch(addTodo(value));
-    setValue("");
-    
+   dispatch(addTodo(value));
+  setValue("");
   }
 
   return (
     <>
     <div>
-      <form >
+      <form onSubmit={handleSubmit} >
         <label htmlFor="todoInput">Enter Todo</label>
         <input
           id="todoInput"
           type="text"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => {  console.log("value is changed" ) ;
+            setValue(e.target.value) }}
           style={{ border: "1px solid #ccc", padding: "8px", borderRadius: "4px", width: "200px" }}
-/>
+> </input>
         
-        <button  type="submit" onClick={handleSubmit}
+        <button  type="submit" 
         style={{ backgroundColor: "#007bff", color: "white", padding: "8px 12px", borderRadius: "4px", marginLeft: "8px" }}
         >Add Todo</button>
       </form>
@@ -42,7 +56,7 @@ function App() {
     <div>
       <h2>Todo List</h2>
       <ul>
-        {useSelector((state)=>state.todos).map((todo)=>(
+        {todos.map((todo)=>(
           <li key={todo.id} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
             <Checkbox 
               checked={todo.completed} 
